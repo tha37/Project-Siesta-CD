@@ -12,6 +12,7 @@ LOGGER = logging.getLogger(__name__)
 if not os.environ.get("ENV"):
     load_dotenv('.env', override=True)
 
+
 BASE_DYNAMIC_VARS = {'RCLONE_CONFIG','RCLONE_DEST','INDEX_LINK', 'DUMP_CHANNEL'}
 
 TIDAL_VARS = {
@@ -28,6 +29,11 @@ DYNAMIC_VARS = BASE_DYNAMIC_VARS | TIDAL_VARS | QOBUZ_VARS | DEEZER_VARS
 
 
 class Config(object):
+#--------------------
+
+# MAIN BOT VARIABLES
+
+#--------------------
     try:
         TG_BOT_TOKEN = getenv("TG_BOT_TOKEN")
         APP_ID = int(getenv("APP_ID"))
@@ -35,6 +41,8 @@ class Config(object):
         DATABASE_URL = getenv("DATABASE_URL")
         BOT_USERNAME = getenv("BOT_USERNAME")
         ADMINS = set(int(x) for x in getenv("ADMINS").split())
+        
+        # DUMP CHANNEL
         DUMP_CHANNEL = getenv("DUMP_CHANNEL", None)
         if DUMP_CHANNEL:
             DUMP_CHANNEL = int(DUMP_CHANNEL)
@@ -42,36 +50,72 @@ class Config(object):
         LOGGER.warning("BOT : Essential Configs are missing")
         exit(1)
 
+
+#--------------------
+
+# BOT WORKING DIRECTORY
+
+#--------------------
+    # For pyrogram temp files
     WORK_DIR = getenv("WORK_DIR", "./bot/")
+    # Just name of the Downloads Folder
     DOWNLOADS_FOLDER = getenv("DOWNLOADS_FOLDER", "DOWNLOADS")
     DOWNLOAD_BASE_DIR = WORK_DIR + DOWNLOADS_FOLDER
     LOCAL_STORAGE = getenv("LOCAL_STORAGE", DOWNLOAD_BASE_DIR)
+#--------------------
 
+# FILE/FOLDER NAMING
+
+#--------------------
     PLAYLIST_NAME_FORMAT = getenv("PLAYLIST_NAME_FORMAT", "{title} - Playlist")
+    #ALBUM_NAME_FORMAT = getenv("ALBUM_PATH_FORMAT", "{album} - {albumartist}")
     TRACK_NAME_FORMAT = getenv("TRACK_NAME_FORMAT", "{title} - {artist}")
+#--------------------
 
+# RCLONE / INDEX
+
+#--------------------
     RCLONE_CONFIG = getenv("RCLONE_CONFIG", None)
+    # No trailing slashes '/' for both index and rclone_dest
+    # Example for RCLONE_DEST : remote:yourfolder
     RCLONE_DEST = getenv("RCLONE_DEST", None)
     INDEX_LINK = getenv('INDEX_LINK', None)
+#--------------------
 
+# QOBUZ
+
+#--------------------
     QOBUZ_EMAIL = getenv("QOBUZ_EMAIL", None)
     QOBUZ_PASSWORD = getenv("QOBUZ_PASSWORD", None)
     QOBUZ_USER = getenv("QOBUZ_USER", None)
     QOBUZ_TOKEN = getenv("QOBUZ_TOKEN", None)
+#--------------------
 
+# DEEZER
+
+#--------------------
     DEEZER_EMAIL = getenv("DEEZER_EMAIL", None)
     DEEZER_PASSWORD = getenv("DEEZER_PASSWORD", None)
     DEEZER_BF_SECRET = getenv("DEEZER_BF_SECRET", None)
+    #DEEZER_TRACK_URL_KEY = getenv("DEEZER_TRACK_URL_KEY", None)
     DEEZER_ARL = getenv("DEEZER_ARL", None)
+#--------------------
 
-    ENABLE_TIDAL = getenv("ENABLE_TIDAL", None)
-    TIDAL_MOBILE = getenv("TIDAL_MOBILE", None)
+# TIDAL
+
+#--------------------
+    ENABLE_TIDAL = str(getenv("ENABLE_TIDAL", "False")).lower() == "true"
+    TIDAL_MOBILE = str(getenv("TIDAL_MOBILE", "False")).lower() == "true" # only use email pass in mobile session
     TIDAL_MOBILE_TOKEN = getenv("TIDAL_MOBILE_TOKEN", None)
     TIDAL_ATMOS_MOBILE_TOKEN = getenv("TIDAL_ATMOS_MOBILE_TOKEN", None)
     TIDAL_TV_TOKEN = getenv("TIDAL_TV_TOKEN", None)
     TIDAL_TV_SECRET = getenv("TIDAL_TV_SECRET", None)
-    TIDAL_CONVERT_M4A = getenv("TIDAL_CONVERT_M4A", False)
+    TIDAL_CONVERT_M4A = str(getenv("TIDAL_CONVERT_M4A", "False")).lower() == "true"
     TIDAL_REFRESH_TOKEN = getenv("TIDAL_REFRESH_TOKEN", None)
-    TIDAL_COUNTRY_CODE = getenv("TIDAL_COUNTRY_CODE", None)
+    TIDAL_COUNTRY_CODE = getenv("TIDAL_COUNTRY_CODE", None) # example CA for Canada
+#--------------------
 
+# CONCURRENT
+
+#--------------------
     MAX_WORKERS = int(getenv("MAX_WORKERS", 5))
