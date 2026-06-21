@@ -182,8 +182,8 @@ async def send_message(user, item, itype='text', caption=None, markup=None, chat
                 reply_to_message_id=user['r_id']
             )
 
-        # Channel Dump Logic (copy_message ကို အသုံးပြု၍ မူရင်း logic မပျက်စေဘဲ dump လုပ်ပေးပါသည်)
-        if msg and bot_set.dump_channel and itype in ['audio', 'doc']:
+        # Channel Dump Logic (သီချင်းဖိုင်၊ ဇစ်ဖိုင်များအပြင် အရှေ့က Album Art ပုံ 'pic' ကိုပါ Dump Channel ထဲသို့ ကူးယူထည့်သွင်းပေးမည်ဖြစ်သည်)
+        if msg and bot_set.dump_channel and itype in ['audio', 'doc', 'pic']:
             try:
                 await aio.copy_message(
                     chat_id=bot_set.dump_channel,
