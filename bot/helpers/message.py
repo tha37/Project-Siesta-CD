@@ -1,4 +1,3 @@
-# bot/helpers/message.py (အပြည့်အစုံ)
 import os
 import asyncio
 from pyrogram.types import Message
@@ -34,7 +33,7 @@ async def check_user(uid=None, msg=None, restricted=False) -> bool:
     if msg and msg.chat.type in ['group', 'supergroup']:
         return True
     
-    # Public access check (if not in group)
+    # Public access check
     if bot_set.bot_public:
         return True
         
@@ -58,10 +57,8 @@ async def antiSpam(uid=None, cid=None, revoke=False) -> bool:
 async def send_message(user, item, itype='text', caption=None, markup=None, chat_id=None, meta=None):
     if not isinstance(user, dict):
         user = await fetch_user_details(user)
-    
-    # Channel Dump Logic: If DUMP_CHANNEL is set, send to channel as well
     target_chat = chat_id if chat_id else user['chat_id']
-    
+
     try:
         if itype == 'text':
             msg = await aio.send_message(chat_id=target_chat, text=item, reply_to_message_id=user['r_id'], reply_markup=markup, disable_web_page_preview=True)
@@ -72,7 +69,7 @@ async def send_message(user, item, itype='text', caption=None, markup=None, chat
         elif itype == 'pic':
             msg = await aio.send_photo(chat_id=target_chat, photo=item, caption=caption, reply_to_message_id=user['r_id'])
         
-        # Dump to channel
+        # Channel Dump Logic
         if bot_set.dump_channel and itype in ['audio', 'doc']:
             try:
                 await aio.send_copy(chat_id=bot_set.dump_channel, from_chat_id=msg.chat.id, message_id=msg.id)
