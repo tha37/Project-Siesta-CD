@@ -196,6 +196,7 @@ async def sort_album_from_artist(album_data: dict):
 
 
 async def ffmpeg_convert(input_file):
-    cmd = f'ffmpeg -i "{input_file}" -c:a copy -loglevel error -y "{input_file}.flac"'
+    # FFMPEG Error Fix: -c:a copy နေရာတွင် -c:a flac ဖြင့် အစားထိုးပြီး FLAC သို့ စနစ်တကျ ပြောင်းလဲစေပါသည်
+    cmd = f'ffmpeg -i "{input_file}" -c:a flac -loglevel error -y "{input_file}.flac"'
     task = await asyncio.create_subprocess_shell(cmd)
     await task.wait()
