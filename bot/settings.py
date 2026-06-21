@@ -2,20 +2,15 @@ import os
 import json
 import base64
 import requests
-
 import bot.helpers.translations as lang
-
 from config import Config
 from bot.logger import LOGGER
-
 from .helpers.database.pg_impl import set_db
 from .helpers.qobuz.qopy import qobuz_api
 from .helpers.deezer.dzapi import deezerapi
 from .helpers.tidal.tidal_api import tidalapi
 from .helpers.translations import lang_available
 
-
-# For simple boolean values
 def __getvalue__(var):
     value, _ = set_db.get_variable(var)
     return value if value else False
@@ -33,14 +28,13 @@ def __decrypt_string__(string):
     except:
         return string
 
-
-
 class BotSettings:
     def __init__(self):
         self.deezer = False
         self.qobuz = False
         self.tidal = None
         self.admins = Config.ADMINS
+        self.dump_channel = Config.DUMP_CHANNEL
 
         self.set_language()
 
@@ -52,23 +46,17 @@ class BotSettings:
         self.rclone = False
         self.check_upload_mode()
 
-        spam, _ = set_db.get_variable('ANTI_SPAM') #string
+        spam, _ = set_db.get_variable('ANTI_SPAM')
         self.anti_spam = spam if spam else 'OFF'
 
         self.bot_public = __getvalue__('BOT_PUBLIC')
-
-        # post photo of album/artist
         self.art_poster = __getvalue__('ART_POSTER')
-
         self.playlist_sort = __getvalue__('PLAYLIST_SORT')
-        # disable returning links for sorted playlist for cleaner chat
         self.disable_sort_link = __getvalue__('PLAYLIST_LINK_DISABLE')
-
-        # Multithreaded downloads
         self.artist_batch = __getvalue__('ARTIST_BATCH_UPLOAD')
         self.playlist_conc = __getvalue__('PLAYLIST_CONCURRENT')
         
-        link_option, _ = set_db.get_variable('RCLONE_LINK_OPTIONS') #str
+        link_option, _ = set_db.get_variable('RCLONE_LINK_OPTIONS')
         self.link_options = link_option if self.rclone and link_option else 'False'
 
         self.album_zip = __getvalue__('ALBUM_ZIP')
@@ -76,7 +64,6 @@ class BotSettings:
         self.artist_zip = __getvalue__('ARTIST_ZIP')
 
         self.clients = []
-
 
     def check_upload_mode(self):
         if os.path.exists('rclone.conf'):
@@ -100,7 +87,6 @@ class BotSettings:
         else:
             self.upload_mode = 'Local'
     
-
     async def login_qobuz(self):
         if Config.QOBUZ_EMAIL or Config.QOBUZ_USER:
             try:
@@ -113,7 +99,6 @@ class BotSettings:
             except Exception as e:
                 LOGGER.error(e)
     
-
     async def login_deezer(self):
         if Config.DEEZER_ARL or Config.DEEZER_EMAIL:
             if Config.DEEZER_BF_SECRET:
@@ -129,53 +114,36 @@ class BotSettings:
             else:
                 LOGGER.error('DEEZER : Check BF_SECRET and TRACK_URL_KEY')
 
-
     async def login_tidal(self):
-        # Check if Tidal is enabled
         self.can_enable_tidal = Config.ENABLE_TIDAL
         if not self.can_enable_tidal:
             return
-
         data = None
-        # Refresh token in env is given preference
         if Config.TIDAL_REFRESH_TOKEN:
             data = {
                 'user_id': None, 
                 'refresh_token': Config.TIDAL_REFRESH_TOKEN, 
                 'country_code': Config.TIDAL_COUNTRY_CODE
             }
-            LOGGER.debug("TIDAL: Using refresh token from environment")
         else:
-            # Try to get saved authentication data
             _, saved_info = set_db.get_variable("TIDAL_AUTH_DATA")
             if saved_info:
                 try:
                     data = json.loads(__decrypt_string__(saved_info))
-                    LOGGER.debug("TIDAL: Using saved authentication data from Database")
                 except Exception as e:
                     LOGGER.error(f"TIDAL: Failed to decrypt/parse saved auth data: {e}")
                     return
-
         if not data:
             return
-
-        # Attempt login
         await tidalapi.login_from_saved(data)
-        
-        # Set audio quality
         quality, _ = set_db.get_variable('TIDAL_QUALITY')
         if quality:
             tidalapi.quality = quality
-        
-        # Set spatial audio
         spatial, _ = set_db.get_variable('TIDAL_SPATIAL')
         if spatial:
             tidalapi.spatial = spatial
-        
-        # Set instance variables
         self.tidal = tidalapi 
         self.clients.append(tidalapi)
-
 
     async def save_tidal_login(self, session):
         data = {
@@ -183,21 +151,15 @@ class BotSettings:
             "refresh_token" : session.refresh_token,
             "country_code" : session.country_code
         }
-
         txt = json.dumps(data)
         set_db.set_variable("TIDAL_AUTH_DATA", 0, True, __encrypt_string__(txt))
-        
-
-
 
     def set_language(self):
-        db_lang, _ = set_db.get_variable('BOT_LANGUAGE') #str
+        db_lang, _ = set_db.get_variable('BOT_LANGUAGE')
         self.bot_lang = db_lang if db_lang else 'en'
-
         for item in lang_available:
             if item.__language__ == self.bot_lang:
                 lang.s = item
                 break
-
 
 bot_set = BotSettings()
