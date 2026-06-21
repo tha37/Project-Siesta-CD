@@ -99,7 +99,8 @@ async def start_track(track_id:int, user:dict, track_meta:dict | None, \
 
         track_meta['extension'] = await get_audio_extension(filepath)
         
-        if quality == 'HI_RES_LOSSLESS' and Config.TIDAL_CONVERT_M4A:
+        # ပြင်ဆင်ထားသည့်နေရာ (Quality သည် HI_RES သို့မဟုတ် HI_RES_LOSSLESS ဖြစ်ပါက FLAC သို့ convert လုပ်ပေးမည်)
+        if quality in ['HI_RES', 'HI_RES_LOSSLESS'] and Config.TIDAL_CONVERT_M4A:
             await ffmpeg_convert(filepath)
             track_meta['filepath'] = track_meta['filepath'] + '.flac'
             os.remove(filepath)
