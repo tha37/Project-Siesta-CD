@@ -42,10 +42,11 @@ class Config(object):
         BOT_USERNAME = getenv("BOT_USERNAME")
         ADMINS = set(int(x) for x in getenv("ADMINS").split())
         
-        # --- အသစ်ထည့်ရမည့် Qobuz Variables ---
+        # --- အသစ်ထည့်ရမည့် Variables (Channel Dump & Qobuz) ---
+        DUMP_CHANNEL = int(getenv("DUMP_CHANNEL", 0))
         QOBUZ_APP_ID = getenv("QOBUZ_APP_ID", None)
         QOBUZ_APP_SECRET = getenv("QOBUZ_APP_SECRET", None)
-        # --------------------------------------
+        # --------------------------------------------------------
 
     except:
         LOGGER.warning("BOT : Essential Configs are missing")
