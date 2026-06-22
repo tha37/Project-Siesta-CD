@@ -1,3 +1,4 @@
+# FILE: bot/settings.py
 import os
 import json
 import base64
@@ -34,7 +35,10 @@ class BotSettings:
         self.qobuz = False
         self.tidal = None
         self.admins = Config.ADMINS
+        
+        # --- Channel Dump Setting ---
         self.dump_channel = Config.DUMP_CHANNEL
+        # --------------------------
 
         self.set_language()
 
