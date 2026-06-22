@@ -1,3 +1,4 @@
+# FILE: bot/helpers/qobuz/qopy.py
 # From vitiko98/qobuz-dl
 import time
 import hashlib
@@ -13,13 +14,21 @@ from bot.logger import LOGGER
 class QoClient:
     def __init__(self):
         self.id = None
-        self.secrets = None
+        self.secrets = []
         self.session = None
         self.ratelimit = aiolimiter.AsyncLimiter(30, 60)
         self.base = "https://www.qobuz.com/api.json/0.2/"
         self.sec = None
         self.quality = 6
         
+        # --- အသစ်ထည့်ရမည့် code (Config ကို စစ်ဆေးခြင်း) ---
+        if Config.QOBUZ_APP_ID:
+            self.id = Config.QOBUZ_APP_ID
+            if Config.QOBUZ_APP_SECRET:
+                self.secrets = [Config.QOBUZ_APP_SECRET] 
+            else:
+                self.secrets = []
+        # ---------------------------------------------------
 
     async def api_call(self, epoint, **kwargs):
         if epoint == "user/login":
@@ -165,7 +174,10 @@ class QoClient:
         ]  # avoid empty fields
 
     async def login(self):
-        self.get_tokens()
+        # Config မှာ ID ရှိနေရင် Bundle ကို မလိုတော့ပါ
+        if not self.id:
+            self.get_tokens()
+            
         self.session = aiohttp.ClientSession()
         #self.rate_limiter = self.get_rate_limiter(30)
         self.session.headers.update(
